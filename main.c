@@ -19,6 +19,7 @@ int main()
 	}
 	while(!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
 	}
 	glfwTerminate();
 	return 0;
