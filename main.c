@@ -8,7 +8,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 
-void InitVulkan(){
+int InitVulkan(){
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -28,11 +28,18 @@ void InitVulkan(){
 	for(int i = 0; i<glfwExtensionCount; ++i)
 	{
 		for(int j = 0; j<extensionCount; ++j)
-			if (strcmp(glfwExtensions[i], extensionProperties[j].extensionName) == 0)
+		{	if (strcmp(glfwExtensions[i], extensionProperties[j].extensionName) == 0)
 			{
 				printf("GLFW Required vulkan extension %s found\n", glfwExtensions[i]);
-				break;	
+				break;
 			}
+			if(j == (extensionCount-1))
+			{
+				printf("ERROR: GLFW Required vulkan extension not %s found\n", glfwExtensions[i]);
+				free(extensionProperties);
+				return 0;
+			}
+		}
 	}
 	free(extensionProperties);
 	VkInstanceCreateInfo createInfo = {};
@@ -45,6 +52,7 @@ void InitVulkan(){
 	VkInstance instance;
 	if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS)
 		printf("Error creating the vulkan instance\n");
+	return 1;
 }
 
 int main()
