@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -17,23 +18,29 @@ void InitVulkan(){
 	appInfo.engineVersion = VK_MAKE_VERSION(1,0,0);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
+	//checking that the required extensions by glfw are present
+	unsigned int glfwExtensionCount = 0;
+	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	unsigned int extensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
+	VkExtensionProperties* extensionProperties = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties)*extensionCount);
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties);
+	for(int i = 0; i<glfwExtensionCount; ++i)
+	{
+		for(int j = 0; j<extensionCount; ++j)
+			if (strcmp(glfwExtensions[i], extensionProperties[j].extensionName) == 0)
+			{
+				printf("GLFW Required vulkan extension %s found\n", glfwExtensions[i]);
+				break;	
+			}
+	}
+	free(extensionProperties);
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
-	unsigned int glfwExtensionCount = 0;
-	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	createInfo.enabledExtensionCount = glfwExtensionCount;
 	createInfo.ppEnabledExtensionNames = glfwExtensions;
 	createInfo.enabledLayerCount = 0;
-
-	unsigned int extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
-	printf("%u extensions supported\n", extensionCount);
-	VkExtensionProperties* properties = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties)*extensionCount);
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, properties);
-	for (int i = 0; i < extensionCount; ++i)
-		printf("%s\n", properties[i].extensionName);
-	free(properties);
 
 	VkInstance instance;
 	if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS)
