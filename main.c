@@ -42,12 +42,39 @@ int InitVulkan(){
 		}
 	}
 	free(extensionProperties);
+#ifndef NDEBUG
+	const char* neededLayer = "VK_LAYER_KHRONOS_validation";
+	unsigned int layerPropCount = 0;
+	vkEnumerateInstanceLayerProperties(&layerPropCount, NULL);
+	VkLayerProperties* layerProperties = (VkLayerProperties*)malloc(sizeof(VkLayerProperties)*layerPropCount);
+	vkEnumerateInstanceLayerProperties(&layerPropCount, layerProperties);
+	for(int i = 0; i < layerPropCount; ++i)
+	{
+		printf("%s\n", layerProperties[i].layerName);
+		if(strcmp(neededLayer, layerProperties[i].layerName) == 0)
+			break;
+		if(i == layerPropCount -1)
+		{
+			printf("ERROR: Required vulkan validation layer %s not found\n", neededLayer);
+				free(layerProperties);
+				return 0;
+		}
+			
+	}
+	free(layerProperties);
+#endif
+
 	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 	createInfo.enabledExtensionCount = glfwExtensionCount;
 	createInfo.ppEnabledExtensionNames = glfwExtensions;
+#ifdef NDEBUG
 	createInfo.enabledLayerCount = 0;
+#else
+	createInfo.enabledLayerCount = layerPropCount;
+	createInfo.ppEnabledLayerNames = &neededLayer;
+#endif
 
 	VkInstance instance;
 	if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS)
