@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -83,7 +82,10 @@ int InitVulkan(VkInstance* instance){
 #endif
 
 	if (vkCreateInstance(&createInfo, NULL, instance) != VK_SUCCESS)
+	{
 		printf("Error creating the vulkan instance\n");
+		return 0;
+	}
 	return 1;
 }
 
