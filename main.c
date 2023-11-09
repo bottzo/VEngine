@@ -4,11 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #define WIDTH 800
 #define HEIGHT 600
 
-int InitVulkan(){
+typedef struct Renderer {
+	GLFWwindow* window;
+	VkInstance instance;		
+}Renderer;
+
+int InitVulkan(VkInstance* instance){
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -76,10 +82,17 @@ int InitVulkan(){
 	createInfo.ppEnabledLayerNames = &neededLayer;
 #endif
 
-	VkInstance instance;
-	if (vkCreateInstance(&createInfo, NULL, &instance) != VK_SUCCESS)
+	if (vkCreateInstance(&createInfo, NULL, instance) != VK_SUCCESS)
 		printf("Error creating the vulkan instance\n");
 	return 1;
+}
+
+void CleanUp(Renderer* renderer)
+{
+	glfwDestroyWindow(renderer->window);
+	vkDestroyInstance(renderer->instance, NULL);
+	free(renderer);
+	glfwTerminate();
 }
 
 int main()
@@ -91,23 +104,28 @@ int main()
 	}
 	printf("Good shit\n");
 	
+	Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", NULL, NULL);
-	if(!window)
+	renderer->window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan window", NULL, NULL);
+	if(!renderer->window)
 	{
 		printf("F window\n");
+		free(renderer);
 		glfwTerminate();
 		return 0;
 	}
 	
-	InitVulkan();
+	if (!InitVulkan(&renderer->instance))
+	{
+		CleanUp(renderer);
+		return 0;
+	}
 	
-	while(!glfwWindowShouldClose(window))
+	while(!glfwWindowShouldClose(renderer->window))
 	{
 		glfwPollEvents();
 	}
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	CleanUp(renderer);
 	return 0;
 }
