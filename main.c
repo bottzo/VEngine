@@ -58,7 +58,7 @@ int InitVulkan(VkInstance* instance){
 		printf("%s\n", layerProperties[i].layerName);
 		if(strcmp(neededLayer, layerProperties[i].layerName) == 0)
 			break;
-		if(i == layerPropCount -1)
+		if(i == (layerPropCount - 1))
 		{
 			printf("ERROR: Required vulkan validation layer %s not found\n", neededLayer);
 				free(layerProperties);
